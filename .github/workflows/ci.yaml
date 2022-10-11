@@ -1,0 +1,30 @@
+name: Reproduction
+
+on: push
+
+jobs:
+  repro:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [2022.10.10, 2022.10.4]
+    steps:
+      - name: Clone git repo
+        uses: actions/checkout@v3
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install pipenv
+        run: pipx install pipenv==${{ matrix.version }}
+      - name: Install newest pip and run install
+        run: |
+          pipenv run pip install -U pip==22.2.2 setuptools==65.3.0 wheel==0.37.1
+          pipenv install --deploy
+      - name: Install outdated pip and run install
+        run: |
+          pipenv --rm
+          pipenv run pip install -U pip==21.2.3 setuptools==57.4.0 wheel==0.37.0
+          pipenv install --deploy
